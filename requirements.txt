@@ -1,0 +1,9 @@
+Flask
+Flask-Session
+requests
+flask_wtf
+sqlalchemy
+Flask-Bootstrap
+email_validator
+flask-Session
+sqlite3
