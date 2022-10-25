@@ -7,7 +7,7 @@ from create import register_user
 from model import User, dbconnect
 import forms
 from flask_bootstrap import Bootstrap
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 # pk_ab85953ba81448f28be52d6aa72f4a4b
 # Configure application
 
@@ -73,25 +73,22 @@ def login():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-
-        # Ensure username was submitted
         if not request.form.get("username"):
             return "username missing", 403
-
         # Ensure password was submitted
         elif not request.form.get("password"):
             return "password missing", 403
 
         # Query database for username
         user = session_db.query(User).filter(User.username == request.form.get("username")).one()
-
+        
         # Ensure username exists and password is correct
-        if user is None or not user.check_password_hash(request.form.get("password")):
+        if user is None or not user.verify_password(request.form.get("password")):
             return "invalid username or password", 403
-
+        print(user.id)
         # Remember which user has logged in
         session["user_id"] = user.id
-
+        print(session["user_id"])
         # Redirect user to home page
         return redirect("/")
 
@@ -115,11 +112,14 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
-    return apology("TODO")
+    global lookup
+    form = forms.QuoteForm()
+    if form.validate_on_submit():
+        symbol = form.symbol.data
+        lookup = lookup(symbol)
+        return render_template("quoted.html", lookup=lookup)
+    return render_template("quote.html",form=form)
 
-
-
-@app.route("/sell", methods=["GET", "POST"])
 @login_required
 def sell():
     """Sell shares of stock"""
@@ -133,10 +133,11 @@ def register():
         user = session_db.query(User).filter(User.username == form.username.data).first()
         if user is None:
             hashed_password = generate_password_hash(form.password.data)
-            user = register_user({'username':form.username.data, 'password':hashed_password, 
+            user = register_user({'username':form.username.data, 'password_hash':hashed_password, 
             'cash':form.cash.data, 'email':form.email.data})
             session_db.add(user)
             session_db.commit()
+        flash('you have successfuly registred.')
         return redirect(url_for('login'))
     return render_template('register.html',form=form,)
             
