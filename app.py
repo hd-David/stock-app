@@ -1,6 +1,6 @@
 import os
 from flask_wtf import FlaskForm
-from flask import Flask, flash, redirect, render_template,session, request, url_for
+from flask import * #Flask, flash, redirect, render_template,session, request, url_for
 from flask_session import Session
 from helpers import apology, login_required, lookup, usd
 from create import register_user
@@ -47,6 +47,7 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
+
     return apology("TODO")
 
 
@@ -123,6 +124,7 @@ def quote():
 @login_required
 def sell():
     """Sell shares of stock"""
+
     return apology("TODO")
 
 
