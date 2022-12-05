@@ -1,5 +1,5 @@
 import os
-import requests
+import requests,csv
 import urllib.parse
 
 from flask import redirect, render_template, request, session
@@ -50,13 +50,17 @@ def lookup(symbol):
     # Parse response
     try:
         quote = response.json()
-        return {
+        print((quote))
+        data =  {
             "name": quote["companyName"],
             "price": float(quote["latestPrice"]),
             "symbol": quote["symbol"]
         }
-    except (KeyError, TypeError, ValueError):
+        return data
+        
+    except print((KeyError, TypeError, ValueError)):
         return None
+        
 
 
 def usd(value):

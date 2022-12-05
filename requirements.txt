@@ -6,4 +6,4 @@ sqlalchemy
 Flask-Bootstrap
 email_validator
 flask-Session
-sqlite3
+pysqlite3

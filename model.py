@@ -25,6 +25,16 @@ class User(Base):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+class Name(Base):
+    __tablename__ = 'names'
+    name_id = Column(Integer, primary_key=True) 
+    first_name = Column(String(30))
+    last_name = Column(String(30))               
+    user = relation('User', backref='names') 
+    user_id = Column(Integer, ForeignKey(User.id))
+
+# class Companies(Base):
+#     pass
 
 # database connection
 def dbconnect():

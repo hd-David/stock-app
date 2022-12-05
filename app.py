@@ -5,10 +5,12 @@ from flask_session import Session
 from helpers import apology, login_required, lookup, usd
 from create import register_user
 from model import User, dbconnect
-import forms
+import forms, csv
 from flask_bootstrap import Bootstrap
 from werkzeug.security import generate_password_hash, check_password_hash
-# pk_ab85953ba81448f28be52d6aa72f4a4b
+import pandas as pd
+# pk_f08268a40f384dac96c71b7596eb67a1
+
 # Configure application
 
 app = Flask(__name__)
@@ -29,7 +31,6 @@ SECRET_KEY = os.urandom(64)
 app.config['SECRET_KEY'] = SECRET_KEY
 Session(app)
 
-
 # Make sure API key is set
 if not os.environ.get("API_KEY"):
     raise RuntimeError("API_KEY not set")
@@ -43,13 +44,12 @@ def after_request(response):
     return response
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 @login_required
 def index():
     """Show portfolio of stocks"""
-
-    return apology("TODO")
-
+   
+    return render_template("index.html")
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
@@ -113,19 +113,22 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
-    global lookup
+    global lookup_for_stock
     form = forms.QuoteForm()
     if form.validate_on_submit():
         symbol = form.symbol.data
-        lookup = lookup(symbol)
-        return render_template("quoted.html", lookup=lookup)
+        lookup_for_stock = lookup(symbol)
+        # lookup_for_stock = pd.DataFrame([lookup_for_stock])
+        # lookup_for_stock = lookup_for_stock.to_html()
+        # print(lookup_for_stock)
+        return render_template("quoted.html", lookup_for_stock=lookup_for_stock)
     return render_template("quote.html",form=form)
 
 @login_required
 def sell():
     """Sell shares of stock"""
 
-    return apology("TODO")
+    return print (lookup())
 
 
 @app.route("/register", methods=["GET","POST"])

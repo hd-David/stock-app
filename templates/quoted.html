@@ -2,5 +2,22 @@
 {% block title %}Quotation{% endblock %}
 {% block main %}
 <h1 class="side-bar">Quotation</h1>
-{{lookup}}
+<table border="1" class="dataframe">
+    <thead>
+        <tr>
+            <th>Company name</th>
+            <th>Price</th>
+            <th>symbol</th>
+        </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{lookup_for_stock["name"]}}</td>
+        <td>{{lookup_for_stock["price"]}}</td>
+        <td>{{lookup_for_stock["symbol"]}}</td>
+      </tr>
+    </tbody>
+  </table>
+<!-- {{lookup_for_stock}} -->
 {% endblock %}
+
