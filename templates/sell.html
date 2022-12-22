@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}
+   Buy stock
+{% endblock %}
+
+{% block main %}
+
+    <form action="/sell" method="post">
+      <label for="ticker">Ticker:</label><br>
+      <input type="text" id="ticker" name="ticker"><br>
+      <label for="quantity">Quantity:</label><br>
+      <input type="number" id="quantity" name="quantity"><br><br>
+      <input type="submit" value="Sell">
+    </form> 
+{% endblock %}

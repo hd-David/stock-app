@@ -6,18 +6,25 @@
     <thead>
         <tr>
             <th>Company name</th>
-            <th>Price</th>
             <th>symbol</th>
+            <th>Price</th>
+            <th>Number of shares</th>
+            <th>Total Amount</th>
         </tr>
     </thead>
     <tbody>
       <tr>
-        <td>{{lookup_for_stock["name"]}}</td>
-        <td>{{lookup_for_stock["price"]}}</td>
-        <td>{{lookup_for_stock["symbol"]}}</td>
+        <td>{{name}}</td>
+        <td>{{symbol}}</td>
+        <td>{{price}}</td>
+        <td>{{quantity}}</td>
+        <td>{{order_price }}</td>
       </tr>
     </tbody>
   </table>
+  <a rel="buy" href="/buy">Buy Now</a>
 <!-- {{lookup_for_stock}} -->
 {% endblock %}
+
+
 
