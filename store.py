@@ -104,3 +104,103 @@ from sqlalchemy.ext.declarative import declarative_base
 
 # Create the declarative base for the models
 Base = declarative_base()
+
+
+
+
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine('database_url')
+Base = declarative_base()
+Session = sessionmaker(bind=engine)
+session = Session()
+
+class User(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    username = Column(String)
+    cash = Column(Integer)
+
+class Portfolio(Base):
+    __tablename__ = 'portfolios'
+    id = Column(Integer, primary_key=True)
+    username = Column(String)
+    symbol = Column(String)
+    holdings = Column(Integer)
+    order_price = Column(Integer)
+    date = Column(DateTime)
+
+def sell():
+    """Sell shares of stock"""
+
+    # Display sell.html when requested
+    if request.method == "GET":
+        return render_template("sell.html")
+
+    # When Sell Now button press - run our checks then add to database
+    if request.method == "POST":
+
+        # Lets get information about the stock code and amount of shares
+        symbol = request.form.get("symbol")
+        holdings = float(request.form.get("number"))
+
+        # Define the order total (negative number!)
+        order_price = -1 * (int(lookup(symbol)["price"]) * (holdings))
+
+        user_dict = session.query(User).filter_by(username=session["user_id"]).first()
+        username = user_dict.username
+
+        # Ease of access for current portfolio
+        current_portfolio = username+"_portfolio"
+        curr_port = session.query(Portfolio).filter_by(username=current_portfolio).all()
+
+        # Current portfolio COPY
+        current_copy = username+"_copy"
+
+        # Define the available cash the user has
+        available_cash = session.query(User).filter_by(username=username).first().cash
+
+        # Run checks
+        # First check: did they enter number of stocks
+        if not holdings:
+            return apology("please enter the number of stocks you wish to purchase", 400)
+
+        # Second check: did they enter a stock code
+        if not symbol:
+            return apology("please enter a stock symbol", 400)
+
+        # Third check: did they enter a VALID stock code
+        if not lookup(symbol):
+            return apology("please enter a valid stock symbol", 400)
+
+        # Fourth check: Did they enter a postive integer amount of stocks
+        if holdings < 0:
+            return apology("please enter a positive integer of stocks")
+
+        # Fith check: Is selling number less than the amount they own
+        # Define current_holdings
+        current_holdings_dict = session.query(Portfolio).filter_by(username=current_portfolio, symbol=symbol).first()
+        current_holdings = current_holdings_dict.holdings
+        if holdings > current_holdings:
+            return apology("sorry, you cannot sell more stocks than you own", 400)
+
+
+
+# Get user inputs
+name = request.form.get('name')
+gender = request.form.get('gender')
+email = request.form.get('email')
+phone = request.form.get('phone')
+
+# Create new user and user_details objects
+new_user = User(username=email, cash=1000)
+new_user_details = UserDetails(user_id=new_user.id, name=name, gender=gender, email=email, phone=phone)
+
+# Add the new objects to the session
+session.add(new_user)
+session.add(new_user_details)
+
+# Commit the changes to the database
+session.commit()

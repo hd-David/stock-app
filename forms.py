@@ -8,28 +8,23 @@ session_db = model.dbconnect()
 User = model.User()
 
 class RegistrationForm(FlaskForm):
+    full_names = StringField('Full names',validators=[InputRequired(), Length(min=8, max=80)])
+    gender = StringField('Full names',validators=[InputRequired(), Length(min=8, max=80)])
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=15)])
     email = StringField('Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
+    gender = StringField('Gender',validators=[InputRequired(), Length(min=8, max=80)])
+    phone = StringField('Phone Number',validators=[InputRequired(), Length(min=8, max=80)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
-    confirm_password = PasswordField(
-        'Confirm Password', validators=[DataRequired(), EqualTo('password',message='Passwords must match.')])
-    #submit = SubmitField('Register')
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password',message='Passwords must match.')])
+    submit = SubmitField('Register')
 
 
-class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[InputRequired(), Length(min=4, max=15)])
-    email = StringField('Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
-    password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
-    confirm_password = PasswordField('Confirm Password', validators=[InputRequired(), EqualTo('password')])
-    def validate_username(self, username):
-        user = session_db.query(User).filter(User.username == form.username.data).first()
-        if user is not None:
-            raise ValidationError('Please use a different username.')
-
-    def validate_email(self, email):
-        user = session_db.query(User).filter(User.email == form.email.data).first()
-        if user is not None:
-            raise ValidationError('Please use a different email address.')
+# class RegistrationForm(FlaskForm):
+#     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=15)])
+#     email = StringField('Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
+#     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
+#     confirm_password = PasswordField('Confirm Password', validators=[InputRequired(), EqualTo('password')])
+   
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])

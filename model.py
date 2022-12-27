@@ -11,12 +11,9 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(64) ,index=True, unique=True)
     password_hash = Column(String(64))
-    email = Column(String(64), unique=True)
     cash = Column(Float, default=10000.00)
     time_stamp = Column(DateTime, default=datetime.utcnow)
-    name = relationship("Name", back_populates="user")
-    
-
+   
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
@@ -28,26 +25,16 @@ class User(Base):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# Define the name model
-class Name(Base):
-    __tablename__ = 'names'
-    
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
-    email_address = Column(String, nullable=False)
-    name_id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    
-    user = relationship('User', back_populates='name')
 
-# Define the company model
-class Company(Base):
-    __tablename__ = 'companies'
-    
+class UserDetails(Base):
+    __tablename__ = 'user_details'
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
     name = Column(String, nullable=False)
-    symbol = Column(String, unique=True)
-    exchange = Column(String, nullable=False)
+    gender = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    phone = Column(String, nullable=False)
+
 
 # Define the cash model
 class Cash(Base):
@@ -60,18 +47,27 @@ class Cash(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     trans_id = Column(String)
 
-# Define the transaction model
-class Transaction(Base):
-    __tablename__ = 'transactions'
-    
-    trans_id = Column(Integer, primary_key=True)
-    datetime = Column(DateTime, nullable=False)
-    price = Column(Float, nullable=False)
-    quantity = Column(Integer, nullable=False)
-    total = Column(Float, nullable=False)
-    ordertype = Column(String, CheckConstraint('ordertype IN ("BUY", "SELL")'))
-    c_id = Column(Integer, ForeignKey('companies.id'))
-    user_id = Column(Integer, ForeignKey('users.id'))
+
+class Portfolio(Base):
+    __tablename__ = 'portfolio'
+    id = Column(Integer, primary_key=True)
+    symbol = Column(String)
+    holdings = Column(Integer)
+    order_price = Column(Float)
+    date = Column(DateTime)
+
+
+class UserPortfolio(Base):
+    __tablename__ = 'user_portfolio'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    portfolio_id = Column(Integer, ForeignKey('portfolio.id'))
+
+user_portfolios = session.query(UserPortfolio).filter_by(user_id=1).all()
+portfolios = []
+for user_portfolio in user_portfolios:
+    portfolio = session.query(Portfolio).filter_by(id=user_portfolio.portfolio_id).first()
+    portfolios.append(portfolio)
 
 
 # database connection

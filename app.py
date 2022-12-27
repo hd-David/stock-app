@@ -6,7 +6,8 @@ from helpers import *
 from create import register_user
 from model import *
 from flask_bootstrap import Bootstrap
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import* 
+from wtforms.validators import *
 
 # pk_9dc7d1c4be2544609f4869655eadaf5b
 
@@ -217,15 +218,29 @@ def sell_stocks():
 def register():
     form = forms.RegistrationForm()
     if form.validate_on_submit():
-        user = session_db.query(User).filter(User.username == form.username.data).first()
-        if user is None:
-            hashed_password = generate_password_hash(form.password.data)
-            user = register_user({'username':form.username.data, 'password_hash':hashed_password, 'email':form.email.data})
-            session_db.add(user)
-            session_db.commit()
-        flash('you have successfuly registred.')
-        return redirect(url_for('login'))
-    return render_template('register.html',form=form,)
+        # Check if the username or email exists
+        user_name = session_db.query(User).filter(User.username == form.username.data).first()
+        email = session_db.query(User).filter(User.email == form.email.data).first()
+        if user_name is not None:
+            form.username.errors.append('Please use a different username.')
+        if email is not None:
+            form.email.errors.append('Please use a different email address.')
+        if user_name is None and email is None:
+            try:
+                # Create the user
+                hashed_password = generate_password_hash(form.password.data)
+                print(hashed_password)
+                user = register_user({'username':form.username.data, 'password_hash':hashed_password, 'email':form.email.data})
+                print(user)
+                session_db.add(user)
+                session_db.commit()
+                flash('you have successfuly registred.')
+                return redirect(url_for('login'))
+            except Exception as e:
+                # Catch any errors that may occur and handle them appropriately
+                flash('An error occurred while registering the user: {}'.format(e))
+    return render_template('register.html',form=form)
+
 
 
 @app.route('/buy', methods=['GET', 'POST'])
