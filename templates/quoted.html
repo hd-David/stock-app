@@ -2,5 +2,29 @@
 {% block title %}Quotation{% endblock %}
 {% block main %}
 <h1 class="side-bar">Quotation</h1>
-{{lookup}}
+<table border="1" class="dataframe">
+    <thead>
+        <tr>
+            <th>Company name</th>
+            <th>symbol</th>
+            <th>Price</th>
+            <th>Number of shares</th>
+            <th>Total Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{name}}</td>
+        <td>{{symbol}}</td>
+        <td>{{price}}</td>
+        <td>{{quantity}}</td>
+        <td>{{order_price }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <a rel="buy" href="/buy">Buy Now</a>
+<!-- {{lookup_for_stock}} -->
 {% endblock %}
+
+
+
