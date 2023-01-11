@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from flask import * #Flask, flash, redirect, render_template,session, request, url_for
 from flask_session import Session
 from helpers import *
-from create import register_user
+from create import *
 from model import *
 from flask_bootstrap import Bootstrap
 from werkzeug.security import* 
@@ -54,51 +54,7 @@ def index():
         pass
     return render_template("index.html")
 
-        # user_dict = db.execute("SELECT username FROM users WHERE username = ?", session["user_id"])
-        # username = user_dict[0]["username"]
-        # # Define current user
-        # #current_user = db.execute("SELECT username FROM users WHERE username = ?", username)
-
-        # # Ease of access for current portfolio
-        # current_portfolio = username+"_portfolio"
-        # curr_port = db.execute("SELECT * FROM ?", current_portfolio)
-
-        # # Define the total portfolio value
-        # value = db.execute("SELECT SUM(order_price) FROM ?", current_portfolio)
-
-        # # Define cash spent
-        # cash_spent_dict = db.execute("SELECT SUM(order_price) FROM ?", current_portfolio)
-        # cash_spent = cash_spent_dict[0]['SUM(order_price)']
-
-        # # Define the user's available cash
-        # cash_dict = db.execute("SELECT cash FROM users WHERE username = ?", username)
-        # cash = cash_dict[0]['cash']
-
-        # if not cash_spent:
-        #     cash_spent = 0
-        #     av_cash = cash
-        # av_cash = cash - cash_spent
-
-        # # Condition before they have bought any stock
-        # port_val = value[0]["SUM(order_price)"]
-        # if not port_val:
-        #     port_val = 0
-        # else:
-        #     port_val = int(value[0]["SUM(order_price)"])
-
-        # # Get information from the total portfolio that is updated each time buy and sell are called
-        # copy_portfolio = username+"_copy"
-        # total_port = db.execute("SELECT * FROM ?", copy_portfolio)
-        
-
-        # # Take them to index.html to view portfolio
-        # return render_template("index.html", port_val=port_val, total_port=total_port, av_cash=av_cash)
-
-
-
-
-
-
+ 
 #@app.route("/buy", methods=["GET", "POST"])
 
 portfolio = {}
@@ -140,14 +96,15 @@ def login():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        if not request.form.get("username"):
+        entered_username_or_email = request.form.get("username") 
+        if not entered_username_or_email:
             return "username missing", 403
         # Ensure password was submitted
         elif not request.form.get("password"):
             return "password missing", 403
 
         # Query database for username
-        user = session_db.query(User).filter(User.username == request.form.get("username")).one()
+        user = session_db.query(User).filter((User.username == entered_username_or_email) | (User.email == entered_username_or_email)).first()
         
         # Ensure username exists and password is correct
         if user is None or not user.verify_password(request.form.get("password")):
@@ -218,6 +175,10 @@ def sell_stocks():
 def register():
     form = forms.RegistrationForm()
     if form.validate_on_submit():
+        name = form.full_names.data
+        phone = form.phone.data
+        gender = form.gender.data
+
         # Check if the username or email exists
         user_name = session_db.query(User).filter(User.username == form.username.data).first()
         email = session_db.query(User).filter(User.email == form.email.data).first()
@@ -231,8 +192,10 @@ def register():
                 hashed_password = generate_password_hash(form.password.data)
                 print(hashed_password)
                 user = register_user({'username':form.username.data, 'password_hash':hashed_password, 'email':form.email.data})
-                print(user)
+                user_details = UserDetails( phone=phone, name=name, gender=gender)
+                print(user.username)
                 session_db.add(user)
+                session_db.add(user_details)
                 session_db.commit()
                 flash('you have successfuly registred.')
                 return redirect(url_for('login'))
@@ -253,12 +216,12 @@ def buy_route():
         
         # Call buy function
         result = buy(symbol, quantity)
-        print(result)
         
-        return render_template('results.html', result=result)
+        return result
     
     # Render form for GET request
     return render_template('buy.html')
+
 
 portfolio = {}
 
@@ -270,17 +233,24 @@ def buy(symbol, quantity):
         return "Invalid symbol"
     user = session_db.query(User).filter_by(username=User.username).first()
     budget = user.cash
-    print(budget)
     # Check if sufficient stock available
     if stock_info["price"] * float(quantity) > budget:
         return "Insufficient funds"
 
     # Purchase stock
-    portfolio[symbol] = quantity
+    if symbol in portfolio:
+        portfolio[symbol] += quantity
+    else:
+        portfolio[symbol] = quantity
     budget -= stock_info["price"] * float(quantity)
     print(portfolio)
+
+    # Add stock to database
+    new_stock = Portfolio(user_id=user.id, symbol=symbol, quantity=quantity, price=stock_info["price"])
+    session_db.add(new_stock)
+    session_db.commit()
    
-    return redirect("index.html") 
+    return redirect("/") 
 
             
         

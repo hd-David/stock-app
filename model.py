@@ -10,6 +10,7 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     username = Column(String(64) ,index=True, unique=True)
+    email = Column(String, nullable=False)
     password_hash = Column(String(64))
     cash = Column(Float, default=10000.00)
     time_stamp = Column(DateTime, default=datetime.utcnow)
@@ -27,12 +28,11 @@ class User(Base):
 
 
 class UserDetails(Base):
-    __tablename__ = 'user_details'
+    __tablename__ = 'details'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     name = Column(String, nullable=False)
     gender = Column(String, nullable=False)
-    email = Column(String, nullable=False)
     phone = Column(String, nullable=False)
 
 
@@ -51,23 +51,23 @@ class Cash(Base):
 class Portfolio(Base):
     __tablename__ = 'portfolio'
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
     symbol = Column(String)
-    holdings = Column(Integer)
-    order_price = Column(Float)
-    date = Column(DateTime)
+    quantity = Column(Integer)
+    price = Column(Float)
 
 
-class UserPortfolio(Base):
-    __tablename__ = 'user_portfolio'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'))
-    portfolio_id = Column(Integer, ForeignKey('portfolio.id'))
+# class UserPortfolio(Base):
+#     __tablename__ = 'user_portfolio'
+#     id = Column(Integer, primary_key=True)
+#     user_id = Column(Integer, ForeignKey('user.id'))
+#     portfolio_id = Column(Integer, ForeignKey('portfolio.id'))
 
-user_portfolios = session.query(UserPortfolio).filter_by(user_id=1).all()
-portfolios = []
-for user_portfolio in user_portfolios:
-    portfolio = session.query(Portfolio).filter_by(id=user_portfolio.portfolio_id).first()
-    portfolios.append(portfolio)
+# user_portfolios = session.query(UserPortfolio).filter_by(user_id=1).all()
+# portfolios = []
+# for user_portfolio in user_portfolios:
+#     portfolio = session.query(Portfolio).filter_by(id=user_portfolio.portfolio_id).first()
+#     portfolios.append(portfolio)
 
 
 # database connection
