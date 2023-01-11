@@ -50,11 +50,10 @@ def lookup(symbol):
     # Parse response
     try:
         quote = response.json()
-        print((quote))
         data =  {
             "name": quote["companyName"],
             "price": float(quote["latestPrice"]),
-            "symbol": quote["symbol"]
+            "symbol": quote["symbol"],
         }
         return data
         
