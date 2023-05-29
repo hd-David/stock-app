@@ -8,6 +8,8 @@ from model import *
 from flask_bootstrap import Bootstrap
 from werkzeug.security import* 
 from wtforms.validators import *
+from flask_login import current_user
+
 
 # pk_9dc7d1c4be2544609f4869655eadaf5b
 
@@ -118,7 +120,7 @@ def login():
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("login.html")
+        return render_template("page_login.html")
 
 
 @app.route("/logout")
