@@ -1,10 +1,11 @@
-import os, forms
+import os
 from flask_wtf import FlaskForm
-from flask import * #Flask, flash, redirect, render_template,session, request, url_for
+from flask import Flask, flash, redirect, render_template,session, request, url_for
 from flask_session import Session
 from helpers import *
+from forms import *
 from create import register_user
-from model import *
+from model import UserPortfolio, dbconnect, User, UserDetails
 from flask_bootstrap import Bootstrap
 from werkzeug.security import* 
 from wtforms.validators import *

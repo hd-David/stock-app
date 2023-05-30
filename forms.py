@@ -1,11 +1,11 @@
-from wtforms.validators import * #DataRequired,EqualTo, Email
+from wtforms.validators import DataRequired,EqualTo, Email, Length, InputRequired
 from werkzeug.security import check_password_hash, generate_password_hash
-from wtforms import * #StringField, BooleanField,PasswordField, SubmitField, EmailField, IntegerField, FloatField
+from wtforms import StringField, BooleanField,PasswordField, SubmitField, EmailField, IntegerField, FloatField
 from flask_wtf import FlaskForm
-import model
+from model import *
 
-session_db = model.dbconnect()
-User = model.User()
+session_db = dbconnect()
+User = User()
 
 class RegistrationForm(FlaskForm):
     full_names = StringField('Full names',validators=[InputRequired(), Length(min=8, max=80)])
