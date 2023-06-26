@@ -1,4 +1,4 @@
-import os, forms
+import os
 from flask_wtf import FlaskForm
 from flask import * #Flask, flash, redirect, render_template,session, request, url_for
 from flask_session import Session
@@ -9,7 +9,7 @@ from flask_bootstrap import Bootstrap
 from werkzeug.security import* 
 from wtforms.validators import *
 from flask_login import current_user
-
+from forms import *
 
 # pk_9dc7d1c4be2544609f4869655eadaf5b
 
@@ -92,24 +92,26 @@ def history():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
+    form = LoginForm()
 
     # Forget any user_id
     session.clear()
 
     # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-        entered_username_or_email = request.form.get("username") 
+    if form.validate_on_submit():
+        entered_username_or_email = form.username.data
+        print(entered_username_or_email)
         if not entered_username_or_email:
             return "username missing", 403
         # Ensure password was submitted
-        elif not request.form.get("password"):
+        elif not form.password.data:
             return "password missing", 403
 
         # Query database for username
         user = session_db.query(User).filter((User.username == entered_username_or_email) | (User.email == entered_username_or_email)).first()
         
         # Ensure username exists and password is correct
-        if user is None or not user.verify_password(request.form.get("password")):
+        if user is None or not user.verify_password(form.password.data):
             return "invalid username or password", 403
         print(user.id)
         # Remember which user has logged in
@@ -120,7 +122,7 @@ def login():
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("page_login.html")
+        return render_template("page_login.html", form=form)
 
 
 @app.route("/logout")
@@ -175,14 +177,11 @@ def sell_stocks():
 
 @app.route("/register", methods=["GET","POST"])
 def register():
-    form = forms.RegistrationForm()
+    form = RegistrationForm()
     if form.validate_on_submit():
-        name = form.full_names.data
-        phone = form.phone.data
-        gender = form.gender.data
 
         # Check if the username or email exists
-        user_name = session_db.query(User).filter(User.username == form.username.data).first()
+        user_name = session_db.query(User).filter(User.email == form.email.data).first()
         email = session_db.query(User).filter(User.email == form.email.data).first()
         if user_name is not None:
             form.username.errors.append('Please use a different username.')
@@ -193,8 +192,8 @@ def register():
                 # Create the user
                 hashed_password = generate_password_hash(form.password.data)
                 print(hashed_password)
-                user = register_user({'username':form.username.data, 'password_hash':hashed_password, 'email':form.email.data})
-                user_details = UserDetails( phone=phone, name=name, gender=gender)
+                user = register_user({'password_hash':hashed_password, 'email':form.email.data})
+                user_details = UserDetails(name=name)
                 print(user.username)
                 session_db.add(user)
                 session_db.add(user_details)
