@@ -1,4 +1,4 @@
-import os
+import os, forms
 from flask_wtf import FlaskForm
 from flask import * #Flask, flash, redirect, render_template,session, request, url_for
 from flask_session import Session
@@ -31,8 +31,9 @@ app.jinja_env.filters["usd"] = usd
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 SECRET_KEY = os.urandom(64)
+print(SECRET_KEY)
 app.config['SECRET_KEY'] = SECRET_KEY
-Session(app)
+
 
 
 # Make sure API key is set
@@ -95,34 +96,36 @@ def login():
     form = LoginForm()
 
     # Forget any user_id
-    session.clear()
+    # session.clear()
 
     # User reached route via POST (as by submitting a form via POST)
-    if form.validate_on_submit():
-        entered_username_or_email = form.username.data
-        print(entered_username_or_email)
+    if request.method == "POST":
+        entered_username_or_email = request.form.get("username") 
         if not entered_username_or_email:
             return "username missing", 403
         # Ensure password was submitted
-        elif not form.password.data:
+        elif not request.form.get("password"):
             return "password missing", 403
 
         # Query database for username
-        user = session_db.query(User).filter((User.username == entered_username_or_email) | (User.email == entered_username_or_email)).first()
-        
+        user = session_db.query(User).filter((User.username == username) | (User.email == username)).first()
+
         # Ensure username exists and password is correct
-        if user is None or not user.verify_password(form.password.data):
+        if user is None or not user.verify_password(request.form.get("password")):
             return "invalid username or password", 403
         print(user.id)
         # Remember which user has logged in
+        print(session)
         session["user_id"] = user.id
-        print(session["user_id"])
+        print("Session user_id:", session["user_id"])
         # Redirect user to home page
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("page_login.html", form=form)
+
+
 
 
 @app.route("/logout")
@@ -145,6 +148,7 @@ def quote():
     if form.validate_on_submit():
         symbol = form.symbol.data
         quantity = form.number_of_shares.data
+        print(symbol, quantity)
         # we check the data user entered
         if not symbol or not quantity:
             return "Missing stock symbol and number of stocks", 400

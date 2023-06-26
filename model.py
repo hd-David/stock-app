@@ -1,7 +1,11 @@
-from sqlalchemy import *
-from sqlalchemy.orm import *
+from sqlalchemy import create_engine, insert, update, delete, select, UniqueConstraint,DateTime, join
+from sqlalchemy import Table, Column,Integer, String, ForeignKey,Numeric, MetaData,Float, inspect
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+
+
 Base = declarative_base()
 
 
@@ -74,5 +78,5 @@ class Portfolio(Base):
 def dbconnect():
     engine = create_engine("sqlite:///finance.db", connect_args={'check_same_thread': False})
     Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    return Session()
+    db_session = sessionmaker(bind=engine)
+    return db_session()
