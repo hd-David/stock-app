@@ -55,6 +55,7 @@ def lookup(symbol):
             "price": float(quote["latestPrice"]),
             "symbol": quote["symbol"],
         }
+        print (data)
         return data
         
     except print((KeyError, TypeError, ValueError)):
