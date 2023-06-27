@@ -10,7 +10,7 @@ User = model.User()
 class RegistrationForm(FlaskForm):
     full_names = StringField('Full names',validators=[InputRequired(), Length(min=8, max=80)])
     email = StringField('Email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
-    username = StringField('Username',validators=[InputRequired(), Length(min=8, max=80)])
+    #username = StringField('Username',validators=[InputRequired(), Length(min=8, max=80)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password',message='Passwords must match.')])
     submit = SubmitField('Register')

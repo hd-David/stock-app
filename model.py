@@ -4,16 +4,19 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+import sqlite3
+
+# Now you can use the sqlite3 module and its functionality in your code
+
 
 
 Base = declarative_base()
-
 
 # Define the user model
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
-    username = Column(String(64) ,index=True, unique=True)
+    full_names = Column(String(64) ,index=True)
     email = Column(String, nullable=False)
     password_hash = Column(String(64))
     cash = Column(Float, default=10000.00)
@@ -22,7 +25,7 @@ class User(Base):
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
-
+ 
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)

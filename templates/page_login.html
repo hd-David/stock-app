@@ -1,3 +1,4 @@
+{% extends "layout.html" %}
 
 <html lang="en">
     <head>
@@ -32,22 +33,11 @@
                 </a>
             </div>
             <div class="card p-4 border-top-left-radius-0 border-top-right-radius-0">
-<<<<<<< HEAD
-                {% block content %}
-                <div class="card p-4 border-top-left-radius-0 border-top-right-radius-0">
-                    <form action="{{ url_for('login') }}" method="POST">
-                        {{ form.csrf_token }}
-                        <div class="form-group">
-                            {{ form.username.label(class= "form-label") }}
-                            {{ form.username(class="form-control", placeholder="Username") }}
-                            {% for error in form.username.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
-=======
+                  
                 <form action="/login" method="post">
                     <div class="form-group">
-                        <label class="form-label" for="username">Username</label>
-                        <input type="email" id="username" name="username" class="form-control" placeholder="Username">
+                        <label class="form-label" for="username_or_email">Email or Username</label>
+                        <input type="email" id="username_or_email" name="username_or_email" class="form-control" placeholder="Username">
         
                     </div>
                     <div class="form-group">
@@ -59,20 +49,11 @@
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="rememberme">
                             <label class="custom-control-label" for="rememberme"> Remember me </label>
->>>>>>> 7c5a44c1bec75457ab005e5d38d3d2d60526e5e5
-                        </div>
-                        <div class="form-group">
-                            {{ form.password.label (class= "form-label") }}
-                            {{ form.password(class="form-control", placeholder="Password") }}
-                            {% for error in form.password.errors %}
-                                <span class="text-danger">{{ error }}</span>
-                            {% endfor %}
                         </div>
                         <button type="submit" class="btn btn-default float-right">Secure login</button>
                     </form>
                 </div>
-                {% endblock %}
-                
+               
             </div>
             <div class="blankpage-footer text-center">
                 <a href="#"><strong>Recover Password</strong></a> | <a href="{{ url_for('register') }}"><strong>Register Account</strong></a>
