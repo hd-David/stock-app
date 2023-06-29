@@ -1,13 +1,15 @@
 import os, forms
 from flask import Flask, flash, redirect, render_template,session, request, url_for
-#from flask_session import Session
+from flask_session import Session
 from helpers import *
 from create import *
-from model import *
+from model import dbconnect, User, UserDetails
 from flask_bootstrap import Bootstrap
 from werkzeug.security import* 
 from wtforms.validators import *
 from flask_login import current_user
+from forms import *
+from sqlalchemy.exc import IntegrityError
 
 
 # pk_710dfbff83df487e9e7ec13c06466185
@@ -17,7 +19,6 @@ from flask_login import current_user
 app = Flask(__name__)
 
 session_db = dbconnect()
-
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -30,7 +31,6 @@ app.jinja_env.filters["usd"] = usd
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 SECRET_KEY = os.urandom(64)
-print(SECRET_KEY)
 app.config['SECRET_KEY'] = SECRET_KEY
 
 
@@ -67,7 +67,7 @@ def buy(symbol, quantity):
     # Check if stock exists
     if stock_info is None:
         return "Invalid symbol"
-    user = session_db.query(User).filter_by(username=User.username).first()
+    user = session_db.query(User).filter_by(full_names=User.full_names).first()
     budget = user.cash
     print(budget)
     # Check if sufficient stock available
@@ -92,41 +92,32 @@ def history():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
-
-    # Forget any user_id
-    # session.clear()
-
-    # User reached route via POST (as by submitting a form via POST)
+    # User reached route via POST (by submitting a form via POST)
     if request.method == "POST":
-
-        username = request.form.get("username")
+        username_or_email = request.form.get("username_or_email")
         password_entered = request.form.get("password")
-      
 
-        if username == "":
-            return "Username missing", 403
+        if username_or_email == "":
+            return "Username or email missing", 403
         elif password_entered == "":
             return "Password missing", 403
 
-        # Query database for username
-        user = session_db.query(User).filter((User.username == username) | (User.email == username)).first()
+        # Query the database for the user using the full_names or email
+        user = session_db.query(User).filter(User.email == username_or_email).first()
 
-        # Ensure username exists and password is correct
+        # Ensure the user exists and the password is correct
         if user is None or not user.verify_password(password_entered):
-            return "Invalid username or password", 403
+            return "Invalid full_names or password", 403
 
-        print("User ID:", user.id)
         # Remember which user has logged in
-        print(session)
         session["user_id"] = user.id
-        print("Session user_id:", session["user_id"])
-        # Redirect user to home page
+
+        # Redirect the user to the home page or any other desired page
         return redirect("/")
 
-    # User reached route via GET (as by clicking a link or via redirect)
+    # User reached route via GET (by clicking a link or via redirect)
     else:
         return render_template("page_login.html")
-
 
 
 
@@ -181,38 +172,40 @@ def sell_stocks():
     return render_template('sell_stocks.html', user=current_user)
 
 
-@app.route("/register", methods=["GET","POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    form = forms.RegistrationForm()
+    form = RegistrationForm()
     if form.validate_on_submit():
-        name = form.full_names.data
-        phone = form.phone.data
-        gender = form.gender.data
-
-        # Check if the username or email exists
-        user_name = session_db.query(User).filter(User.username == form.username.data).first()
-        email = session_db.query(User).filter(User.email == form.email.data).first()
-        if user_name is not None:
-            form.username.errors.append('Please use a different username.')
-        if email is not None:
-            form.email.errors.append('Please use a different email address.')
-        if user_name is None and email is None:
+        # Check if the full_names or email already exists in the database
+        existing_user = session_db.query(User).filter(User.email == form.email.data).first()
+        if existing_user is not None:
+            if existing_user.email == form.email.data:
+               form.email.errors.append('Please use a different email address.')
+        else:
             try:
-                # Create the user
+                # Create the user object
                 hashed_password = generate_password_hash(form.password.data)
-                print(hashed_password)
-                user = register_user({'username':form.username.data, 'password_hash':hashed_password, 'email':form.email.data})
-                user_details = UserDetails( phone=phone, name=name, gender=gender)
-                print(user.username)
+                user = User(
+                    full_names=form.full_names.data,
+                    email=form.email.data,
+                    password_hash=hashed_password
+                )
+                # Add the user to the session and commit to the database
                 session_db.add(user)
-                session_db.add(user_details)
                 session_db.commit()
-                flash('you have successfuly registred.')
+
+                flash('You have successfully registered.')
                 return redirect(url_for('login'))
+            except IntegrityError:
+                # Handle the case when the full_names or email already exists
+                session_db.rollback()
+                flash('Username or email already exists. Please choose a different one.')
             except Exception as e:
-                # Catch any errors that may occur and handle them appropriately
+                # Catch any other errors that may occur and handle them appropriately
                 flash('An error occurred while registering the user: {}'.format(e))
-    return render_template('register.html',form=form)
+
+    return render_template('register.html', form=form)
+
 
 
 
@@ -241,7 +234,7 @@ def buy(symbol, quantity):
     # Check if stock exists
     if stock_info is None:
         return "Invalid symbol"
-    user = session_db.query(User).filter_by(username=User.username).first()
+    user = session_db.query(User).filter_by(full_names=User.full_names).first()
     budget = user.cash
     # Check if sufficient stock available
     if stock_info["price"] * float(quantity) > budget:
