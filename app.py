@@ -1,14 +1,10 @@
-import os, forms
+import os
 from flask import Flask, flash, redirect, render_template,session, request, url_for
-from flask_session import Session
 from helpers import *
 from create import *
-from model import dbconnect, User, UserDetails
+from model import dbconnect, User, Address
 from flask_bootstrap import Bootstrap
-from werkzeug.security import* 
-from wtforms.validators import *
-from flask_login import current_user
-from forms import *
+import forms
 from sqlalchemy.exc import IntegrityError
 
 
@@ -47,6 +43,8 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
+
+print(session_db)
 
 @app.route("/", methods=["GET", "POST"])
 @login_required
@@ -174,7 +172,7 @@ def sell_stocks():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    form = RegistrationForm()
+    form = forms.RegistrationForm()
     if form.validate_on_submit():
         # Check if the full_names or email already exists in the database
         existing_user = session_db.query(User).filter(User.email == form.email.data).first()

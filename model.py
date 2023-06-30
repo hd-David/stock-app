@@ -1,27 +1,35 @@
 from sqlalchemy import create_engine, insert, update, delete, select, UniqueConstraint,DateTime, join
-from sqlalchemy import Table, Column,Integer, String, ForeignKey,Numeric, MetaData,Float, inspect
+from sqlalchemy import Table, Column,Integer, String, ForeignKey,Numeric, MetaData,Float, func 
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session, Mapped,mapped_column, DeclarativeBase, relationship
 import sqlite3
+from typing import Optional, List
+from sqlalchemy.orm import Session
+
+
 
 # Now you can use the sqlite3 module and its functionality in your code
 
+class Base(DeclarativeBase):
+    pass
 
-
-Base = declarative_base()
 
 # Define the user model
 class User(Base):
-    __tablename__ = "users"
-    id = Column(Integer, primary_key=True)
-    full_names = Column(String(64) ,index=True)
-    email = Column(String, nullable=False)
-    password_hash = Column(String(64))
-    cash = Column(Float, default=10000.00)
-    time_stamp = Column(DateTime, default=datetime.utcnow)
-   
+    __tablename__ = "user"
+
+    id = mapped_column(Integer, primary_key=True)
+    full_names: Mapped[str]
+    username: Mapped[str] = mapped_column(String(64))
+    create_date: Mapped[datetime] = mapped_column(insert_default=func.now())
+    password_hash: Mapped[str] = mapped_column(String(100))
+    addresses: Mapped[List["Address"]] = relationship(back_populates="user")
+   #user: Mapped["Portfolio"] = relationship(back_populates="user")
+    cash: Mapped[int] = mapped_column(insert_default=10000)
+    email: Mapped[str]
+  
+ 
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
@@ -34,52 +42,29 @@ class User(Base):
         return check_password_hash(self.password_hash, password)
 
 
-class UserDetails(Base):
-    __tablename__ = 'details'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    name = Column(String, nullable=False)
-    gender = Column(String, nullable=False)
-    phone = Column(String, nullable=False)
+class Address(Base):
+    __tablename__ = "address"
+
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(ForeignKey("user.id"))
+    emaill: Mapped[str]
+    user: Mapped["User"] = relationship(back_populates="addresses")
+ 
 
 
-# Define the cash model
-class Cash(Base):
-    __tablename__ = 'cash'
-    
-    id = Column(Integer, primary_key=True)
-    datetime = Column(DateTime, nullable=False)
-    debit = Column(Float, nullable=False)
-    credit = Column(Float, nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    trans_id = Column(String)
-
-
-class Portfolio(Base):
-    __tablename__ = 'portfolio'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    symbol = Column(String)
-    quantity = Column(Integer)
-    price = Column(Float)
-
-
-# class UserPortfolio(Base):
-#     __tablename__ = 'user_portfolio'
+# class Portfolio(Base):
+#     __tablename__ = 'portfolio'
 #     id = Column(Integer, primary_key=True)
 #     user_id = Column(Integer, ForeignKey('user.id'))
-#     portfolio_id = Column(Integer, ForeignKey('portfolio.id'))
-
-# user_portfolios = session.query(UserPortfolio).filter_by(user_id=1).all()
-# portfolios = []
-# for user_portfolio in user_portfolios:
-#     portfolio = session.query(Portfolio).filter_by(id=user_portfolio.portfolio_id).first()
-#     portfolios.append(portfolio)
+#     user: Mapped["User"] = relationship(back_populates="portfolio")
+#     symbol = Column(String)
+#     quantity = Column(Integer)
+#     price = Column(Float)
 
 
 # database connection
 def dbconnect():
     engine = create_engine("sqlite:///finance.db", connect_args={'check_same_thread': False})
-    Base.metadata.create_all(engine)
-    db_session = sessionmaker(bind=engine)
-    return db_session()
+    with Session(bind=engine) as session:
+        session = session
+        return session
