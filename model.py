@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, insert, update, delete, select, UniqueCons
 from sqlalchemy import Table, Column,Integer, String, ForeignKey,Numeric, MetaData,Float, func 
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from sqlalchemy.orm import Session, Mapped,mapped_column, DeclarativeBase, relationship
+from sqlalchemy.orm import  Mapped,mapped_column, DeclarativeBase, relationship
 import sqlite3
 from typing import Optional, List
 from sqlalchemy.orm import Session
@@ -14,20 +14,20 @@ from sqlalchemy.orm import Session
 class Base(DeclarativeBase):
     pass
 
-
+print(Base)
 # Define the user model
 class User(Base):
     __tablename__ = "user"
 
     id = mapped_column(Integer, primary_key=True)
-    full_names: Mapped[str]
-    username: Mapped[str] = mapped_column(String(64))
+    full_names = mapped_column(String(64))
+    username = mapped_column(String(64))
     create_date: Mapped[datetime] = mapped_column(insert_default=func.now())
-    password_hash: Mapped[str] = mapped_column(String(100))
+    password_hash = mapped_column(String(100))
     addresses: Mapped[List["Address"]] = relationship(back_populates="user")
    #user: Mapped["Portfolio"] = relationship(back_populates="user")
     cash: Mapped[int] = mapped_column(insert_default=10000)
-    email: Mapped[str]
+    email: Mapped[str] = mapped_column(String, nullable=False)
   
  
     @property
@@ -40,7 +40,6 @@ class User(Base):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
-
 
 class Address(Base):
     __tablename__ = "address"
@@ -64,7 +63,12 @@ class Address(Base):
 
 # database connection
 def dbconnect():
-    engine = create_engine("sqlite:///finance.db", connect_args={'check_same_thread': False})
-    with Session(bind=engine) as session:
-        session = session
+   
+    engine = create_engine('sqlite:///finance.db')
+    Base.metadata.create_all(bind=engine)
+
+    print(engine)
+    with Session(engine) as session:
         return session
+
+print(dbconnect())

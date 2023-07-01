@@ -44,8 +44,6 @@ def after_request(response):
     return response
 
 
-print(session_db)
-
 @app.route("/", methods=["GET", "POST"])
 @login_required
 def index():
