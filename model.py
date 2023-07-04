@@ -25,7 +25,7 @@ class User(Base):
     create_date: Mapped[datetime] = mapped_column(insert_default=func.now())
     password_hash = mapped_column(String(100))
     addresses: Mapped[List["Address"]] = relationship(back_populates="user")
-   #user: Mapped["Portfolio"] = relationship(back_populates="user")
+    portfolio: Mapped["Portfolio"] = relationship(back_populates="user")
     cash: Mapped[int] = mapped_column(insert_default=10000)
     email: Mapped[str] = mapped_column(String, nullable=False)
   
@@ -51,14 +51,14 @@ class Address(Base):
  
 
 
-# class Portfolio(Base):
-#     __tablename__ = 'portfolio'
-#     id = Column(Integer, primary_key=True)
-#     user_id = Column(Integer, ForeignKey('user.id'))
-#     user: Mapped["User"] = relationship(back_populates="portfolio")
-#     symbol = Column(String)
-#     quantity = Column(Integer)
-#     price = Column(Float)
+class Portfolio(Base):
+    __tablename__ = 'portfolio'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    user: Mapped["User"] = relationship(back_populates="portfolio")
+    symbol = Column(String)
+    quantity = Column(Integer)
+    price = Column(Float)
 
 
 # database connection

@@ -8,11 +8,11 @@ import forms
 from sqlalchemy.exc import IntegrityError
 
 
-# pk_710dfbff83df487e9e7ec13c06466185
+# pk_cda57eb3533f4aafac734ec7523ac410
 
 # Configure application
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static")
 
 session_db = dbconnect()
 
@@ -128,6 +128,7 @@ def logout():
     return redirect("/")
 
 
+
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
 def quote():
@@ -172,11 +173,14 @@ def sell_stocks():
 def register():
     form = forms.RegistrationForm()
     if form.validate_on_submit():
+        print(form.username.data)
         # Check if the full_names or email already exists in the database
         existing_user = session_db.query(User).filter(User.email == form.email.data).first()
-        if existing_user is not None:
-            if existing_user.email == form.email.data:
-               form.email.errors.append('Please use a different email address.')
+        existing_username = session_db.query(User).filter(User.username == form.username.data).first()
+        if existing_user is not None and existing_user.email == form.email.data:
+            form.email.errors.append('Please email already exist, use a different email address.')
+        if existing_username is not None and existing_username.username == form.username.data:
+            form.username.errors.append('Please username already exist, use a different username.')
         else:
             try:
                 # Create the user object
@@ -184,7 +188,8 @@ def register():
                 user = User(
                     full_names=form.full_names.data,
                     email=form.email.data,
-                    password_hash=hashed_password
+                    password_hash=hashed_password,
+                    username=form.username.data
                 )
                 # Add the user to the session and commit to the database
                 session_db.add(user)
