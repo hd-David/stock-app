@@ -28,7 +28,18 @@ class User(Base):
     portfolio: Mapped["Portfolio"] = relationship(back_populates="user")
     cash: Mapped[int] = mapped_column(insert_default=10000)
     email: Mapped[str] = mapped_column(String, nullable=False)
-  
+    
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
  
     @property
     def password(self):

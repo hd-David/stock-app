@@ -1,24 +1,28 @@
 {% extends "layout.html" %}
 {% block main %}
-Welcome to Mwisakamana Finance,!
-<table>
-    <thead>
-      <tr>
-        <th>Symbol</th>
-        <th>Company</th>
-        <th>Price</th>
-        <th>Quantity</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for stock in stocks %}
-        <tr>
-          <td>{{ stock[1] }}</td>
-          <td>{{ stock[0] }}</td>
-          <td>{{ stock[2] }}</td>
-          <td>{{ stock[3] }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    Welcome to Mwisakamana Finance, {{ current_user.full_names }}!
+
+    <table>
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Company</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stocks %}
+                <tr>
+                    <td>{{ stock["symbol"] }}</td>
+                    <td>{{ stock["company_name"] }}</td>
+                    <td>{{ stock["price"] }}</td>
+                    <td>{{ stock["quantity"] }}</td>
+                    <td>{{ stock["total_value"] }}</td>
+
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

@@ -6,6 +6,8 @@ from model import dbconnect, User, Address
 from flask_bootstrap import Bootstrap
 import forms
 from sqlalchemy.exc import IntegrityError
+from flask_login import current_user, LoginManager, login_user, logout_user
+
 
 
 # pk_cda57eb3533f4aafac734ec7523ac410
@@ -13,6 +15,9 @@ from sqlalchemy.exc import IntegrityError
 # Configure application
 
 app = Flask(__name__, static_folder="static")
+
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 session_db = dbconnect()
 
@@ -48,34 +53,19 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
+
+    # Get the user's ID
+    user_id = current_user.id
+    print(user_id)
     if request.method == "GET":
-        pass
+        # Retrieve the portfolio data for the user
+        portfolio_data = get_portfolio_data(user_id)
+        print(portfolio_data[1])
+        # Pass the portfolio data to the template for rendering
+        return render_template("index.html", stocks=portfolio_data)
+
     return render_template("index.html")
 
- 
-#@app.route("/buy", methods=["GET", "POST"])
-
-portfolio = {}
-
-def buy(symbol, quantity):
-    stock_info = lookup(symbol)
-    global portfolio
-    # Check if stock exists
-    if stock_info is None:
-        return "Invalid symbol"
-    user = session_db.query(User).filter_by(full_names=User.full_names).first()
-    budget = user.cash
-    print(budget)
-    # Check if sufficient stock available
-    if stock_info["price"] * float(quantity) > budget:
-        return "Insufficient funds"
-
-    # Purchase stock
-    portfolio[symbol] = quantity
-    budget -= stock_info["price"] * float(quantity)
-    print(portfolio)
-   
-    return "The purchase is succesful"
 
 
 @app.route("/history")
@@ -84,6 +74,12 @@ def history():
     """Show history of transactions"""
     return apology("TODO")
 
+# User loader function
+@login_manager.user_loader
+def load_user(user_id):
+    # Load and return the User object based on the user_id
+    user = session_db.query(User).get(int(user_id))
+    return user
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -103,10 +99,10 @@ def login():
 
         # Ensure the user exists and the password is correct
         if user is None or not user.verify_password(password_entered):
-            return "Invalid full_names or password", 403
+            return "Invalid username or password", 403
 
         # Remember which user has logged in
-        session["user_id"] = user.id
+        login_user(user)
 
         # Redirect the user to the home page or any other desired page
         return redirect("/")
@@ -122,10 +118,10 @@ def logout():
     """Log user out"""
 
     # Forget any user_id
-    session.clear()
+    logout_user()
 
     # Redirect user to login form
-    return redirect("/")
+    return redirect("/login")
 
 
 
@@ -220,41 +216,81 @@ def buy_route():
         
         # Call buy function
         result = buy(symbol, quantity)
+        if result == "Success":
+            flash("Stock purchased successfully!", "success")
+        else:
+            flash(result, "error")
         
-        return result
+        return redirect(url_for('index'))
     
     # Render form for GET request
     return render_template('buy.html')
 
 
-portfolio = {}
-
 def buy(symbol, quantity):
     stock_info = lookup(symbol)
-    global portfolio
     # Check if stock exists
     if stock_info is None:
         return "Invalid symbol"
-    user = session_db.query(User).filter_by(full_names=User.full_names).first()
+    
+    user = session_db.query(User).get(current_user.id)
     budget = user.cash
-    # Check if sufficient stock available
+    # Check if sufficient funds available
     if stock_info["price"] * float(quantity) > budget:
         return "Insufficient funds"
-
+    
     # Purchase stock
-    if symbol in portfolio:
-        portfolio[symbol] += quantity
-    else:
-        portfolio[symbol] = quantity
-    budget -= stock_info["price"] * float(quantity)
-    print(portfolio)
-
-    # Add stock to database
-    new_stock = Portfolio(user_id=user.id, symbol=symbol, quantity=quantity, price=stock_info["price"])
-    session_db.add(new_stock)
+    total_cost = stock_info["price"] * float(quantity)
+    user.cash -= total_cost
+    
+    # Add stock to user's portfolio
+    portfolio = Portfolio(user_id=user.id, symbol=symbol, quantity=quantity, price=stock_info["price"])
+    session_db.add(portfolio)
     session_db.commit()
    
-    return redirect("/") 
+    return "Success"
+
+
+def get_portfolio_data(user_id):
+    # Retrieve the portfolio for the given user_id
+    portfolio = session_db.query(Portfolio).filter_by(user_id=user_id).all()
+    print(portfolio)
+
+    # Create an empty list to store the portfolio data
+    portfolio_data = []
+
+    # Iterate over each portfolio entry
+    for entry in portfolio:
+        # Retrieve the stock symbol and quantity from the portfolio entry
+        symbol = entry.symbol
+        quantity = entry.quantity
+
+        # Use the lookup function to fetch the stock quote data for the symbol
+        quote_data = lookup(symbol)
+
+        # If the lookup was successful and quote data is available
+        if quote_data:
+            # Extract the company name and price from the quote data
+            company_name = quote_data["name"]
+            price = quote_data["price"]
+
+            # Calculate the total value of the stock holding
+            total_value = price * quantity
+
+            # Create a dictionary with the portfolio data for this stock
+            stock_data = {
+                "symbol": symbol,
+                "company_name": company_name,
+                "price": price,
+                "quantity": quantity,
+                "total_value": total_value,
+            }
+
+            # Add the stock data to the portfolio_data list
+            portfolio_data.append(stock_data)
+
+    # Return the portfolio data
+    return portfolio_data
 
             
         
