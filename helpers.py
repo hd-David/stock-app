@@ -36,31 +36,33 @@ def login_required(f):
 
 
 def lookup(symbol):
-    """Look up quote for symbol."""
-
-    # Contact API
+    """Look up quote for symbol using Alpha Vantage."""
     try:
         api_key = os.environ.get("API_KEY")
-        url = f"https://cloud.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote?token={api_key}"
-        response = requests.get(url)
-        response.raise_for_status()
-    except requests.RequestException:
-        return None
+        if not api_key:
+            return None
 
-    # Parse response
-    try:
-        quote = response.json()
-        data =  {
-            "name": quote["companyName"],
-            "price": float(quote["latestPrice"]),
-            "symbol": quote["symbol"],
-        }
-        print (data)
+        url = "https://www.alphavantage.co/query"
+        params = {
+            "function": "GLOBAL_QUOTE", "symbol": symbol.upper(),"apikey": api_key}
+
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        quote = response.json().get("Global Quote")
+
+        if not quote:
+            return None
+
+        data = {"name": symbol.upper(),  # Alpha doesn’t return company name here
+                "symbol": quote["01. symbol"],
+                "price": float(quote["05. price"])
+                }
+
+        print(data)
         return data
-        
-    except print((KeyError, TypeError, ValueError)):
+
+    except (requests.RequestException, KeyError, TypeError, ValueError):
         return None
-        
 
 
 def usd(value):

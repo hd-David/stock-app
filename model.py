@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy.orm import  Mapped,mapped_column, DeclarativeBase, relationship
 import sqlite3
 from typing import Optional, List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 
 
 
@@ -20,14 +20,14 @@ class User(Base):
     __tablename__ = "user"
 
     id = mapped_column(Integer, primary_key=True)
-    full_names = mapped_column(String(64))
-    username = mapped_column(String(64))
+    full_names = mapped_column(String(255))
+    username = mapped_column(String(255))
     create_date: Mapped[datetime] = mapped_column(insert_default=func.now())
-    password_hash = mapped_column(String(100))
+    password_hash = mapped_column(String(1000))
     addresses: Mapped[List["Address"]] = relationship(back_populates="user")
     portfolio: Mapped["Portfolio"] = relationship(back_populates="user")
     cash: Mapped[int] = mapped_column(insert_default=10000)
-    email: Mapped[str] = mapped_column(String, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
     
     def is_authenticated(self):
         return True
@@ -57,7 +57,6 @@ class Address(Base):
 
     id = mapped_column(Integer, primary_key=True)
     user_id = mapped_column(ForeignKey("user.id"))
-    emaill: Mapped[str]
     user: Mapped["User"] = relationship(back_populates="addresses")
  
 
@@ -67,19 +66,21 @@ class Portfolio(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     user: Mapped["User"] = relationship(back_populates="portfolio")
-    symbol = Column(String)
+    symbol = Column(String(15))
     quantity = Column(Integer)
     price = Column(Float)
 
 
-# database connection
-def dbconnect():
-   
-    engine = create_engine('sqlite:///finance.db')
+DATABASE_URL = 'mysql+mysqlconnector://root:@localhost/finance_app'
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def init_db():
+    # This creates all your classes (User, Portfolio, etc.) as tables
     Base.metadata.create_all(bind=engine)
+    print("Database tables created successfully in 'finance_app'!")
 
-    print(engine)
-    with Session(engine) as session:
-        return session
-
-print(dbconnect())
+# Use this to get a session whenever you need to add data
+def dbconnect():
+    return SessionLocal()

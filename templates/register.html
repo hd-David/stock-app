@@ -1,65 +1,41 @@
 {% extends "layout.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Register{% endblock %}
 {% block main %}
-<h1 class="side-bar">Register</h1>
-<div class="card p-4 border-top-left-radius-0 border-top-right-radius-0" style="width: 400px; margin: 0 auto;">
-  <form method="POST" action="{{ url_for('register') }}" class="form-horizontal">
-  {{ form.csrf_token }}
-  <div class="form-group">
-    {{ form.full_names.label }}
-    {{ form.full_names(size=32, class="form-control") }}
-    {% for error in form.full_names.errors %}
-        <span style="color: red;">{{ error }}</span>
-    {% endfor %}
+<div class="row">
+  <div class="col-md-6 col-lg-5 col-xl-4 ml-auto mr-auto">
+    <div id="panel-register" class="panel">
+      <div class="panel-hdr">
+	<h2>Create <span class="fw-300">Account</span></h2>
+      </div>
+      <div class="panel-container show">
+	<div class="panel-content">
+	  <form action="/register" method="post">
+	    <div class="form-group">
+	      <label class="form-label">Full Name</label>
+	      <input type="text" name="full_name" class="form-control" placeholder="John Doe" required>
+	    </div>
+	    <div class="form-group">
+	      <label class="form-label">Email Address</label>
+	      <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
+	    </div>
+	    <div class="form-group">
+	      <label class="form-label">Username</label>
+	      <input type="text" name="username" class="form-control" placeholder="User123" required autocomplete="off">
+	    </div>
+	    <div class="form-group">
+	      <label class="form-label">Password</label>
+	      <input type="password" name="password" class="form-control" required>
+	    </div>
+	    <div class="form-group">
+	      <label class="form-label">Confirm Password</label>
+	      <input type="password" name="confirmation" class="form-control" required>
+	    </div>
+
+	    <button type="submit" class="btn btn-primary btn-block btn-lg mt-3">Register</button>
+	  </form>
+	</div>
+      </div>
+    </div>
   </div>
-  <div class="form-group">
-    {{ form.email.label }}
-    {{ form.email(size=32, class="form-control") }}
-    {% for error in form.email.errors %}
-        <span style="color: red;">{{ error }}</span>
-    {% endfor %}
-  </div>
-  <div class="form-group">
-    {{ form.username.label }}
-    {{ form.username(size=32, class="form-control") }}
-    {% for error in form.username.errors %}
-        <span style="color: red;">{{ error }}</span>
-    {% endfor %}
-  </div>
-  <div class="form-group">
-    {{ form.password.label }}
-    {{ form.password(size=32, class="form-control") }}
-    {% for error in form.password.errors %}
-        <span style="color: red;">{{ error }}</span>
-    {% endfor %}
-  </div>
-  <div class="form-group">
-    {{ form.confirm_password.label }}
-    {{ form.confirm_password(size=32, class="form-control") }}
-    {% for error in form.confirm_password.errors %}
-        <span style="color: red;">{{ error }}</span>
-    {% endfor %}
-  </div>
-  <div class="form-group">
-    {{ form.submit(class="btn btn-primary", style="background-color: blue; color: white;") }}
-  </div>
-</form>
 </div>
-
 {% endblock %}
-
-<style>
-.form-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  margin: auto;
-}
-.form-horizontal {
-  max-width: 200;
-}
-
-</style>

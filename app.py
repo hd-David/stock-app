@@ -50,21 +50,33 @@ def after_request(response):
 
 
 @app.route("/", methods=["GET", "POST"])
-@login_required
 def index():
     """Show portfolio of stocks"""
+    if current_user.is_authenticated:
+        user_id = current_user.id
 
-    # Get the user's ID
-    user_id = current_user.id
-    print(user_id)
-    if request.method == "GET":
-        # Retrieve the portfolio data for the user
+        # 1. Get the stock holdings
         portfolio_data = get_portfolio_data(user_id)
-        print(portfolio_data[1])
-        # Pass the portfolio data to the template for rendering
-        return render_template("index.html", stocks=portfolio_data)
 
-    return render_template("index.html")
+        # 2. Get the available cash from the user object
+        available_cash = current_user.cash
+
+        # 3. Calculate grand total (Stocks + Cash)
+        stock_value = sum(stock['total_value'] for stock in portfolio_data)
+        grand_total = stock_value + available_cash
+
+        # 4. Pass EVERYTHING to the template
+        return render_template("index.html",stocks=portfolio_data,total=grand_total,cash=available_cash)
+
+    else:
+        # DYNAMIC LANDING PAGE LOGIC
+        
+        market_data = get_trending_stocks()
+
+        # 3. Send the real-time data to the landing page
+    return render_template("landing.html", stocks=market_data)
+
+                                            
 
 
 
@@ -121,7 +133,7 @@ def logout():
     logout_user()
 
     # Redirect user to login form
-    return redirect("/login")
+    return render_template("landing.html")
 
 
 
@@ -141,13 +153,13 @@ def quote():
         # Negative number of stocks
         elif int(quantity) < 0:
             return "Please enters above one or positive  number of stocks", 400
-
+        stock_info = lookup(symbol)
         # Use lookup function to check if stock code is valid
-        if not lookup(symbol):
+        if not stock_info:
             return "stock code was not found, please enter a valid stock symbol", 400
         else:
             # Display the stock information to the user: Stock code, price, and stock name
-            return render_template("quoted.html", name=lookup(symbol)["name"], symbol=lookup(symbol)["symbol"],  price = lookup(symbol)["price"], order_price = (lookup(symbol)["price"] * int(quantity)), quantity=quantity)
+            return render_template("quoted.html", name=stock_info["name"], symbol=stock_info["symbol"],  price = stock_info["price"], order_price = (stock_info["price"] * int(quantity)), quantity=quantity)
 
     return render_template("quote.html", form=form)
 
@@ -282,7 +294,7 @@ def get_portfolio_data(user_id):
                 "symbol": symbol,
                 "company_name": company_name,
                 "price": price,
-                "quantity": quantity,
+                "shares": quantity,
                 "total_value": total_value,
             }
 
@@ -291,8 +303,34 @@ def get_portfolio_data(user_id):
 
     # Return the portfolio data
     return portfolio_data
+def get_trending_stocks():
+    symbols = ["AAPL", "TSLA", "NVDA", "SOFI"]
+    stocks = []
 
-            
+    for symbol in symbols:
+        quote = lookup(symbol)
+        if not quote:
+            continue
+
+        current_price = quote["price"]
+    
+        # fetch last stored price
+    
+
+        last_price = (session_db.query(Portfolio.price).filter(Portfolio.symbol == symbol).order_by(Portfolio.price.desc()).first())
+                
+
+        previous_price = last_price.price if last_price is not None  else current_price
+    
+        change = ((current_price - previous_price) / previous_price) * 100
+
+        stocks.append({
+            "name": quote["name"],
+            "price": current_price,
+            "change": round(change, 2)
+        })
+
+    return stocks
         
 if __name__ == '__main__':
     app.run(debug=True)
