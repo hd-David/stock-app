@@ -21,6 +21,12 @@
         .page-sidebar {
           transform: translateX(-100%);
           transition: transform 0.3s ease;
+          z-index: 1000;
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 250px;
         }
         
         body.mobile-nav-on .page-sidebar {
@@ -72,7 +78,7 @@
 	    <header class="page-header" role="banner">
 	      {% if current_user.is_authenticated %}
 	      <div class="hidden-lg-up">
-		<a href="#" class="btn btn-sm btn-icon waves-effect waves-themed" data-action="toggle" data-class="mobile-nav-on" data-target="body">
+		<a href="javascript:void(0)" class="btn btn-sm btn-icon waves-effect waves-themed" data-action="toggle" data-class="mobile-nav-on" data-target="body">
 		  <i class="fal fa-bars" style="font-size: 20px;"></i>
 		</a>
 	      </div>
@@ -102,5 +108,28 @@
 
       <script src="{{ url_for('static', filename='js/vendors.bundle.js') }}"></script>
       <script src="{{ url_for('static', filename='js/app.bundle.js') }}"></script>
+      
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          // Mobile nav toggle fallback
+          var hamburger = document.querySelector('[data-action="toggle"][data-class="mobile-nav-on"]');
+          var overlay = document.querySelector('.page-content-overlay');
+          
+          if (hamburger) {
+            hamburger.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              document.body.classList.toggle('mobile-nav-on');
+            });
+          }
+          
+          if (overlay) {
+            overlay.addEventListener('click', function(e) {
+              e.preventDefault();
+              document.body.classList.remove('mobile-nav-on');
+            });
+          }
+        });
+      </script>
     </body>
 </html>
