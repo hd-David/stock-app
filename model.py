@@ -4,8 +4,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from sqlalchemy.orm import  Mapped,mapped_column, DeclarativeBase, relationship
 import sqlite3
+import os
 from typing import Optional, List
 from sqlalchemy.orm import sessionmaker
+
 
 
 
@@ -81,7 +83,7 @@ class Transaction(Base):
     timestamp = Column(DateTime, default=func.now())
 
 
-DATABASE_URL = 'mysql+mysqlconnector://root:@localhost/finance_app'
+DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///finance.db')
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
