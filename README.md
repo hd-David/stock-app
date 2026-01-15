@@ -48,6 +48,11 @@ Before running this application, ensure you have:
    ```bash
    pip install -r requirements.txt
    ```
+   
+   **Note**: You may need to install `mysql-connector-python` separately if not included:
+   ```bash
+   pip install mysql-connector-python
+   ```
 
 4. **Set up the database**
    
@@ -56,9 +61,15 @@ Before running this application, ensure you have:
    CREATE DATABASE finance_app;
    ```
    
-   Update the database connection string in `model.py` if needed:
+   Update the database connection string in `model.py` with your credentials:
    ```python
-   DATABASE_URL = 'mysql+mysqlconnector://root:@localhost/finance_app'
+   DATABASE_URL = 'mysql+mysqlconnector://username:password@localhost/finance_app'
+   ```
+   
+   **Security Note**: For production, use environment variables for database credentials instead of hardcoding them:
+   ```python
+   import os
+   DATABASE_URL = os.environ.get('DATABASE_URL', 'mysql+mysqlconnector://root:@localhost/finance_app')
    ```
 
 5. **Initialize the database tables**
@@ -190,7 +201,18 @@ if __name__ == '__main__':
     app.run(debug=True)
 ```
 
-For production deployment, set `debug=False` and use a production-ready server like Gunicorn or uWSGI.
+**⚠️ Security Warning**: Never run with `debug=True` in production as it can expose sensitive information and security vulnerabilities.
+
+For production deployment:
+1. Set `debug=False` in the code or use environment variables:
+   ```python
+   app.run(debug=os.environ.get('FLASK_DEBUG', 'False') == 'True')
+   ```
+2. Use a production-ready WSGI server like Gunicorn or uWSGI:
+   ```bash
+   pip install gunicorn
+   gunicorn -w 4 -b 0.0.0.0:5000 app:app
+   ```
 
 ## Future Enhancements
 
