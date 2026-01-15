@@ -10,9 +10,10 @@
       <div class="panel-container show">
 	<div class="panel-content">
 	  <form action="/register" method="post">
+	    {{ form.csrf_token }}
 	    <div class="form-group">
 	      <label class="form-label">Full Name</label>
-	      <input type="text" name="full_name" class="form-control" placeholder="John Doe" required>
+	      <input type="text" name="full_names" class="form-control" placeholder="John Doe" required>
 	    </div>
 	    <div class="form-group">
 	      <label class="form-label">Email Address</label>
@@ -28,7 +29,7 @@
 	    </div>
 	    <div class="form-group">
 	      <label class="form-label">Confirm Password</label>
-	      <input type="password" name="confirmation" class="form-control" required>
+	      <input type="password" name="confirm_password" class="form-control" required>
 	    </div>
 
 	    <button type="submit" class="btn btn-primary btn-block btn-lg mt-3">Register</button>

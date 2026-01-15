@@ -112,7 +112,9 @@ def login():
             return "Password missing", 403
 
         # Query the database for the user using the full_names or email
-        user = session_db.query(User).filter(User.email == username_or_email).first()
+        user = session_db.query(User).filter(
+            (User.email == username_or_email) | (User.username == username_or_email)
+        ).first()
 
         # Ensure the user exists and the password is correct
         if user is None or not user.verify_password(password_entered):
