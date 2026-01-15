@@ -41,7 +41,7 @@
 	      {% for stock in stocks %}
 	      <tr>
 		<td class="fw-700 text-primary">{{ stock.symbol }}</td>
-		<td>{{ stock.name }}</td>
+		<td>{{ stock.company_name }}</td>
 		<td>{{ stock.shares }}</td>
 		<td>{{ stock.price | usd }}</td>
 		<td class="fw-700 text-right">{{ stock.total_value | usd }}</td>

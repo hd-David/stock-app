@@ -1,0 +1,127 @@
+{% extends "layout.html" %}
+
+{% block title %}Transaction History{% endblock %}
+
+{% block main %}
+<div class="subheader">
+  <h1 class="subheader-title">
+    <i class='fal fa-history text-info'></i> Transaction <span class='fw-300'>History</span>
+    <small>
+      View all your buy and sell transactions
+    </small>
+  </h1>
+</div>
+
+<div class="row">
+  <div class="col-xl-12">
+    <div id="panel-1" class="panel">
+      <div class="panel-hdr">
+        <h2>
+          All <span class="fw-300"><i>Transactions</i></span>
+        </h2>
+        <div class="panel-toolbar">
+          <button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+          <button class="btn btn-panel" data-action="panel-fullscreen" data-toggle="tooltip" data-offset="0,10" data-original-title="Fullscreen"></button>
+        </div>
+      </div>
+
+      <div class="panel-container show">
+        <div class="panel-content">
+          {% if transactions %}
+          <table class="table table-bordered table-hover table-striped w-100 m-0">
+            <thead class="bg-info-500 text-white">
+              <tr>
+                <th>Date & Time</th>
+                <th>Type</th>
+                <th>Symbol</th>
+                <th>Shares</th>
+                <th>Price per Share</th>
+                <th class="text-right">Total Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for transaction in transactions %}
+              <tr>
+                <td>{{ transaction.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>
+                  {% if transaction.transaction_type == 'BUY' %}
+                    <span class="badge badge-success">
+                      <i class="fal fa-arrow-down"></i> BUY
+                    </span>
+                  {% else %}
+                    <span class="badge badge-warning">
+                      <i class="fal fa-arrow-up"></i> SELL
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="fw-700 text-primary">{{ transaction.symbol }}</td>
+                <td>{{ transaction.quantity }}</td>
+                <td>{{ transaction.price | usd }}</td>
+                <td class="fw-700 text-right">{{ (transaction.price * transaction.quantity) | usd }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="alert alert-info text-center" role="alert">
+            <i class="fal fa-info-circle fa-3x mb-3 d-block"></i>
+            <h5>No transactions yet</h5>
+            <p class="mb-3">Start trading to see your transaction history here.</p>
+            <a href="/buy" class="btn btn-primary mr-2">
+              <i class="fal fa-shopping-cart"></i> Buy Stocks
+            </a>
+            <a href="/sell" class="btn btn-warning">
+              <i class="fal fa-money-bill-wave"></i> Sell Stocks
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if transactions %}
+<div class="row">
+  <div class="col-xl-12">
+    <div id="panel-2" class="panel">
+      <div class="panel-hdr bg-info-50">
+        <h2>
+          <i class="fal fa-chart-line"></i> Trading <span class="fw-300"><i>Summary</i></span>
+        </h2>
+      </div>
+      <div class="panel-container show">
+        <div class="panel-content">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="text-center p-3">
+                <h3 class="text-success">
+                  {{ transactions | selectattr('transaction_type', 'equalto', 'BUY') | list | length }}
+                </h3>
+                <p class="text-muted mb-0">Total Purchases</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="text-center p-3">
+                <h3 class="text-warning">
+                  {{ transactions | selectattr('transaction_type', 'equalto', 'SELL') | list | length }}
+                </h3>
+                <p class="text-muted mb-0">Total Sales</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="text-center p-3">
+                <h3 class="text-info">
+                  {{ transactions | length }}
+                </h3>
+                <p class="text-muted mb-0">Total Transactions</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

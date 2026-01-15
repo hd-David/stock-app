@@ -70,6 +70,16 @@ class Portfolio(Base):
     quantity = Column(Integer)
     price = Column(Float)
 
+class Transaction(Base):
+    __tablename__ = 'transactions'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    symbol = Column(String(15))
+    quantity = Column(Integer)
+    price = Column(Float)
+    transaction_type = Column(String(10))  # 'BUY' or 'SELL'
+    timestamp = Column(DateTime, default=func.now())
+
 
 DATABASE_URL = 'mysql+mysqlconnector://root:@localhost/finance_app'
 

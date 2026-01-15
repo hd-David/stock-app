@@ -1,24 +1,108 @@
 {% extends "layout.html" %}
 
 {% block title %}
-   Buy stock
+   Buy Stocks
 {% endblock %}
 
 {% block main %}
-    <div class="side-bar">
-      <form action="/buy" method="post">
-        <label for="ticker">Ticker:</label><br>
-        <input type="text" id="ticker" name="ticker"><br>
-        <label for="quantity">Quantity:</label><br>
-        <input type="number" id="quantity" name="quantity"><br><br>
-        <input type="submit" value="Buy">
-      </form> 
+<div class="subheader">
+  <h1 class="subheader-title">
+    <i class='fal fa-shopping-cart text-success'></i> Buy <span class='fw-300'>Stocks</span>
+    <small>
+      Purchase shares of your favorite companies
+    </small>
+  </h1>
+</div>
+
+<div class="row">
+  <div class="col-xl-6">
+    <div id="panel-1" class="panel">
+      <div class="panel-hdr">
+        <h2>
+          Buy <span class="fw-300"><i>Stock</i></span>
+        </h2>
+        <div class="panel-toolbar">
+          <button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+        </div>
+      </div>
+      <div class="panel-container show">
+        <div class="panel-content">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          <form action="/buy" method="post">
+            <div class="form-group">
+              <label class="form-label" for="ticker">Stock Symbol</label>
+              <input type="text" id="ticker" name="ticker" class="form-control" placeholder="e.g., AAPL, TSLA, GOOGL" required autofocus>
+              <span class="help-block">Enter the stock ticker symbol</span>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="quantity">Number of Shares</label>
+              <input type="number" id="quantity" name="quantity" class="form-control" min="1" placeholder="e.g., 10" required>
+              <span class="help-block">Enter the number of shares to purchase</span>
+            </div>
+            
+            <div class="panel-content border-faded border-left-0 border-right-0 border-bottom-0 d-flex flex-row align-items-center mt-3">
+              <button type="submit" class="btn btn-success btn-lg waves-effect waves-themed">
+                <i class="fal fa-shopping-cart"></i> Buy Stock
+              </button>
+              <a href="/" class="btn btn-default btn-lg ml-2 waves-effect waves-themed">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-xl-6">
+    <div id="panel-2" class="panel">
+      <div class="panel-hdr">
+        <h2>
+          Your <span class="fw-300"><i>Cash Balance</i></span>
+        </h2>
+      </div>
+      <div class="panel-container show">
+        <div class="panel-content">
+          <div class="d-flex align-items-center justify-content-center" style="min-height: 150px;">
+            <div class="text-center">
+              <h1 class="display-3 text-success mb-0">
+                <i class="fal fa-wallet"></i> {{ current_user.cash | usd }}
+              </h1>
+              <p class="text-muted mt-2">Available for trading</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     
- <style>
-  .side-bar{
-    padding-left: 10px;
-    margin-left: 10px;
-  }
- </style>
+    <div id="panel-3" class="panel">
+      <div class="panel-hdr bg-info-50">
+        <h2>
+          <i class="fal fa-info-circle"></i> Buying <span class="fw-300"><i>Tips</i></span>
+        </h2>
+      </div>
+      <div class="panel-container show">
+        <div class="panel-content">
+          <ul class="list-unstyled">
+            <li class="mb-2"><i class="fal fa-check text-success mr-2"></i> Stock symbols are case-insensitive</li>
+            <li class="mb-2"><i class="fal fa-check text-success mr-2"></i> Prices are fetched in real-time</li>
+            <li class="mb-2"><i class="fal fa-check text-success mr-2"></i> Ensure you have sufficient cash balance</li>
+            <li class="mb-2"><i class="fal fa-check text-success mr-2"></i> Transaction history is recorded</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,16 +1,136 @@
 {% extends "layout.html" %}
 
 {% block title %}
-   Buy stock
+   Sell Stocks
 {% endblock %}
 
 {% block main %}
+<div class="subheader">
+  <h1 class="subheader-title">
+    <i class='fal fa-money-bill-wave text-warning'></i> Sell <span class='fw-300'>Stocks</span>
+    <small>
+      Sell shares from your portfolio
+    </small>
+  </h1>
+</div>
 
-    <form action="/sell" method="post">
-      <label for="ticker">Ticker:</label><br>
-      <input type="text" id="ticker" name="ticker"><br>
-      <label for="quantity">Quantity:</label><br>
-      <input type="number" id="quantity" name="quantity"><br><br>
-      <input type="submit" value="Sell">
-    </form> 
+<div class="row">
+  <div class="col-xl-6">
+    <div id="panel-1" class="panel">
+      <div class="panel-hdr">
+        <h2>
+          Sell <span class="fw-300"><i>Stock</i></span>
+        </h2>
+        <div class="panel-toolbar">
+          <button class="btn btn-panel" data-action="panel-collapse" data-toggle="tooltip" data-offset="0,10" data-original-title="Collapse"></button>
+        </div>
+      </div>
+      <div class="panel-container show">
+        <div class="panel-content">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          
+          {% if portfolio %}
+          <form action="/sell" method="post">
+            <div class="form-group">
+              <label class="form-label" for="ticker">Stock Symbol</label>
+              <select id="ticker" name="ticker" class="form-control" required autofocus>
+                <option value="">Select a stock...</option>
+                {% for stock in portfolio %}
+                  <option value="{{ stock.symbol }}">{{ stock.symbol }} ({{ stock.quantity }} shares)</option>
+                {% endfor %}
+              </select>
+              <span class="help-block">Select from your portfolio</span>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="quantity">Number of Shares</label>
+              <input type="number" id="quantity" name="quantity" class="form-control" min="1" placeholder="e.g., 5" required>
+              <span class="help-block">Enter the number of shares to sell</span>
+            </div>
+            
+            <div class="panel-content border-faded border-left-0 border-right-0 border-bottom-0 d-flex flex-row align-items-center mt-3">
+              <button type="submit" class="btn btn-warning btn-lg waves-effect waves-themed">
+                <i class="fal fa-money-bill-wave"></i> Sell Stock
+              </button>
+              <a href="/" class="btn btn-default btn-lg ml-2 waves-effect waves-themed">Cancel</a>
+            </div>
+          </form>
+          {% else %}
+          <div class="alert alert-info" role="alert">
+            <i class="fal fa-info-circle"></i> You don't own any stocks yet. <a href="/buy" class="alert-link">Buy some stocks</a> to get started!
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-xl-6">
+    <div id="panel-2" class="panel">
+      <div class="panel-hdr">
+        <h2>
+          Your <span class="fw-300"><i>Portfolio</i></span>
+        </h2>
+      </div>
+      <div class="panel-container show">
+        <div class="panel-content">
+          {% if portfolio %}
+          <table class="table table-bordered table-hover table-sm">
+            <thead class="bg-warning-100">
+              <tr>
+                <th>Symbol</th>
+                <th class="text-right">Shares</th>
+                <th class="text-right">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for stock in portfolio %}
+              <tr>
+                <td class="fw-700">{{ stock.symbol }}</td>
+                <td class="text-right">{{ stock.quantity }}</td>
+                <td class="text-right">{{ stock.price | usd }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="text-center text-muted py-4">
+            <i class="fal fa-inbox fa-3x mb-3"></i>
+            <p>No stocks in portfolio</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div id="panel-3" class="panel">
+      <div class="panel-hdr bg-warning-50">
+        <h2>
+          <i class="fal fa-info-circle"></i> Selling <span class="fw-300"><i>Tips</i></span>
+        </h2>
+      </div>
+      <div class="panel-container show">
+        <div class="panel-content">
+          <ul class="list-unstyled">
+            <li class="mb-2"><i class="fal fa-check text-warning mr-2"></i> Select stock from your portfolio</li>
+            <li class="mb-2"><i class="fal fa-check text-warning mr-2"></i> Prices are fetched in real-time</li>
+            <li class="mb-2"><i class="fal fa-check text-warning mr-2"></i> Cash will be added to your balance</li>
+            <li class="mb-2"><i class="fal fa-check text-warning mr-2"></i> Transaction is recorded in history</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
