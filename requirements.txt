@@ -6,3 +6,4 @@ sqlalchemy
 flask-Bootstrap
 email_validator
 flask_login
+python-dotenv

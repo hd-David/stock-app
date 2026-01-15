@@ -38,8 +38,10 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 
 # Make sure API key is set
-if not os.environ.get("API_KEY"):
-    raise RuntimeError("API_KEY not set")
+from dotenv import load_dotenv
+load_dotenv() # This loads the variables from .env into your system
+
+api_key = os.getenv("API_KEY")
 
 @app.after_request
 def after_request(response):
