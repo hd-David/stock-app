@@ -2,7 +2,7 @@ import os
 from flask import Flask, flash, redirect, render_template,session, request, url_for
 from helpers import *
 from create import *
-from model import dbconnect, User, Address
+from model import dbconnect, User, Address, Transaction
 from flask_bootstrap import Bootstrap
 import forms
 from sqlalchemy.exc import IntegrityError
@@ -84,7 +84,12 @@ def index():
 @login_required
 def history():
     """Show history of transactions"""
-    return apology("TODO")
+    user_id = current_user.id
+    
+    # Get all transactions for the user, ordered by most recent
+    transactions = session_db.query(Transaction).filter_by(user_id=user_id).order_by(Transaction.timestamp.desc()).all()
+    
+    return render_template("history.html", transactions=transactions)
 
 # User loader function
 @login_manager.user_loader
@@ -168,13 +173,71 @@ def quote():
 @app.route('/sell', methods=['GET', 'POST'])
 @login_required
 def sell_stocks():
-  if request.method == 'POST':
-    ticker = request.form['ticker']
-    quantity = request.form['quantity']
-    # perform sell operation
-    return render_template('success.html')
-  else:
-    return render_template('sell_stocks.html', user=current_user)
+    if request.method == 'POST':
+        symbol = request.form['ticker']
+        quantity = request.form['quantity']
+        
+        # Call sell function
+        result = sell(symbol, quantity)
+        if result == "Success":
+            flash("Stock sold successfully!", "success")
+        else:
+            flash(result, "error")
+        
+        return redirect(url_for('index'))
+    else:
+        # Get user's portfolio for the dropdown
+        user_id = current_user.id
+        portfolio = session_db.query(Portfolio).filter_by(user_id=user_id).all()
+        return render_template('sell.html', portfolio=portfolio)
+
+def sell(symbol, quantity):
+    """Sell shares of stock"""
+    # Validate quantity
+    try:
+        quantity = int(quantity)
+        if quantity <= 0:
+            return "Quantity must be positive"
+    except ValueError:
+        return "Invalid quantity"
+    
+    user = session_db.query(User).get(current_user.id)
+    
+    # Check if user owns this stock
+    portfolio_entry = session_db.query(Portfolio).filter_by(user_id=user.id, symbol=symbol).first()
+    
+    if not portfolio_entry:
+        return "You don't own this stock"
+    
+    if portfolio_entry.quantity < quantity:
+        return "Not enough shares"
+    
+    # Get current stock price
+    stock_info = lookup(symbol)
+    if stock_info is None:
+        return "Invalid symbol"
+    
+    # Sell stock
+    total_revenue = stock_info["price"] * quantity
+    user.cash += total_revenue
+    
+    # Update portfolio
+    portfolio_entry.quantity -= quantity
+    if portfolio_entry.quantity == 0:
+        session_db.delete(portfolio_entry)
+    
+    # Record the transaction
+    transaction = Transaction(
+        user_id=user.id,
+        symbol=symbol,
+        quantity=quantity,
+        price=stock_info["price"],
+        transaction_type='SELL'
+    )
+    session_db.add(transaction)
+    session_db.commit()
+    
+    return "Success"
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -245,19 +308,44 @@ def buy(symbol, quantity):
     if stock_info is None:
         return "Invalid symbol"
     
+    # Validate quantity
+    try:
+        quantity = int(quantity)
+        if quantity <= 0:
+            return "Quantity must be positive"
+    except ValueError:
+        return "Invalid quantity"
+    
     user = session_db.query(User).get(current_user.id)
     budget = user.cash
     # Check if sufficient funds available
-    if stock_info["price"] * float(quantity) > budget:
+    if stock_info["price"] * quantity > budget:
         return "Insufficient funds"
     
     # Purchase stock
-    total_cost = stock_info["price"] * float(quantity)
+    total_cost = stock_info["price"] * quantity
     user.cash -= total_cost
     
-    # Add stock to user's portfolio
-    portfolio = Portfolio(user_id=user.id, symbol=symbol, quantity=quantity, price=stock_info["price"])
-    session_db.add(portfolio)
+    # Check if user already owns this stock
+    existing_portfolio = session_db.query(Portfolio).filter_by(user_id=user.id, symbol=symbol).first()
+    if existing_portfolio:
+        # Update existing position
+        existing_portfolio.quantity += quantity
+        existing_portfolio.price = stock_info["price"]
+    else:
+        # Add new stock to user's portfolio
+        portfolio = Portfolio(user_id=user.id, symbol=symbol, quantity=quantity, price=stock_info["price"])
+        session_db.add(portfolio)
+    
+    # Record the transaction
+    transaction = Transaction(
+        user_id=user.id,
+        symbol=symbol,
+        quantity=quantity,
+        price=stock_info["price"],
+        transaction_type='BUY'
+    )
+    session_db.add(transaction)
     session_db.commit()
    
     return "Success"
