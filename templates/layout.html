@@ -14,8 +14,37 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon/favicon-32x32.png') }}">
 
     <link rel="stylesheet" media="screen, print" href="{{ url_for('static', filename='css/themes/cust-theme-3.css') }}">
+    
+    <style>
+      /* Mobile sidebar styles */
+      @media (max-width: 991.98px) {
+        .page-sidebar {
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
+        }
+        
+        body.mobile-nav-on .page-sidebar {
+          transform: translateX(0);
+        }
+        
+        .page-content-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 999;
+        }
+        
+        body.mobile-nav-on .page-content-overlay {
+          display: block;
+        }
+      }
+    </style>
   </head>
-  <body class="mod-bg-1 mod-nav-link">
+  <body class="mod-bg-1 mod-nav-link nav-function-fixed">
       <div class="page-wrapper">
 	<div class="page-inner">
 
@@ -36,13 +65,14 @@
 	      </ul>
 	    </nav>
 	  </aside>
+	  <div class="page-content-overlay" data-action="toggle" data-class="mobile-nav-on" data-target="body"></div>
 	  {% endif %}
 
 	  <div class="page-content-wrapper">
 	    <header class="page-header" role="banner">
 	      {% if current_user.is_authenticated %}
 	      <div class="hidden-lg-up">
-		<a href="#" class="btn btn-sm btn-icon waves-effect waves-themed" data-action="toggle" data-class="nav-function-hidden">
+		<a href="#" class="btn btn-sm btn-icon waves-effect waves-themed" data-action="toggle" data-class="mobile-nav-on" data-target="body">
 		  <i class="fal fa-bars" style="font-size: 20px;"></i>
 		</a>
 	      </div>
