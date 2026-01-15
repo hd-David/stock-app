@@ -18,9 +18,11 @@ A full-featured stock trading web application built with Flask that allows users
 - **Database**: MySQL/MariaDB with SQLAlchemy ORM
 - **Authentication**: Flask-Login for session management
 - **Forms**: Flask-WTF for form handling and validation
-- **UI Framework**: Flask-Bootstrap for responsive design
+- **UI Framework**: Flask-Bootstrap with SmartAdmin template (optimized)
 - **API**: Alpha Vantage API for real-time stock data
 - **Security**: Werkzeug for password hashing
+
+**Note**: The SmartAdmin template has been optimized - only essential files are included (6.7MB vs original 25MB). See [STATIC_FILES.md](STATIC_FILES.md) for details.
 
 ## Prerequisites
 
@@ -222,6 +224,15 @@ For production deployment:
 - Stock price alerts
 - Advanced charts and analytics
 - Multiple currency support
+
+## Performance Optimization
+
+The application includes several performance optimizations:
+- **Optimized Static Files**: Removed unused SmartAdmin components, reducing static files from 25MB to 6.7MB (73% reduction)
+- **Cache Headers**: Responses include cache control headers
+- **Minimal Dependencies**: Only essential JavaScript and CSS libraries are loaded
+
+For details on static file optimization, see [STATIC_FILES.md](STATIC_FILES.md).
 
 ## Contributing
 
