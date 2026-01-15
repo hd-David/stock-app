@@ -1,70 +1,80 @@
 {% extends "layout.html" %}
 
 {% block main %}
-<div class="row">
-  <div class="col-xl-12">
-    <div class="text-center py-5">
-      <h1 class="display-3 fw-700 text-primary">C$50 Finance</h1>
-      <p class="lead text-muted">Real-time market insights and portfolio management at your fingertips.</p>
-      <div class="mt-4">
-	<a href="/register" class="btn btn-primary btn-lg px-5 shadow-0">Get Started</a>
-	<a href="/login" class="btn btn-outline-primary btn-lg px-5 ml-2">Login</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row mt-4">
-  {% for stock in trending_stocks %}
-  <div class="col-sm-6 col-xl-3">
-    <div class="p-3 bg-white border-faded rounded mb-g shadow-sm d-flex align-items-center">
-      <div class="d-inline-flex align-items-center justify-content-center widget-thumbnail bg-primary-500 text-white rounded-circle mr-3">
-	<i class="fal fa-chart-line fa-2x"></i>
-      </div>
-      <div class="flex-1">
-	<div class="text-muted small lh-1">{{ stock.name }}</div>
-	<div class="fw-700 h4 mb-0 text-dark">{{ stock.price | usd }}</div>
-	<span class="text-{{ 'success' if stock.change >= 0 else 'danger' }} small fw-500">
-	  <i class="fal fa-caret-{{ 'up' if stock.change >= 0 else 'down' }}"></i> {{ stock.change }}%
-	</span>
-      </div>
-    </div>
-  </div>
-  {% endfor %}
+<div class="alert bg-fusion-700 text-white border-0 mb-g d-flex align-items-center">
+    <span class="badge badge-warning mr-2">LIVE</span>
+    <marquee behavior="scroll" direction="left" class="fw-500">
+        U.S. stock futures rise; more bank earnings ahead • Apple hits new 52-week high • Federal Reserve meeting scheduled for Wednesday...
+    </marquee>
 </div>
 
 <div class="row">
-  <div class="col-lg-8 mx-auto">
-    <div id="panel-market" class="panel">
-      <div class="panel-hdr">
-	<h2>Market <span class="fw-300">Watchlist</span></h2>
-      </div>
-      <div class="panel-container show">
-	<div class="panel-content">
-	  <table class="table table-sm table-clean">
-	    <thead>
-	      <tr>
-		<th>Ticker</th>
-		<th>Company</th>
-		<th class="text-right">Price</th>
-	      </tr>
-	    </thead>
-	    <tbody>
-	      <tr>
-		<td><span class="badge badge-primary">AAPL</span></td>
-		<td>Apple Inc.</td>
-		<td class="text-right fw-700">$223.12</td>
-	      </tr>
-	      <tr>
-		<td><span class="badge badge-primary">TSLA</span></td>
-		<td>Tesla, Inc.</td>
-		<td class="text-right fw-700">$245.88</td>
-	      </tr>
-	    </tbody>
-	  </table>
-	</div>
-      </div>
+    <div class="col-xl-8">
+        <div class="card border-faded mb-g shadow-sm">
+            <div class="row no-gutters">
+                <div class="col-md-6">
+                    <div class="bg-fusion-100 w-100 h-100 d-flex align-items-center justify-content-center" style="min-height: 250px;">
+                        <i class="fal fa-newspaper fa-4x text-muted"></i>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card-body">
+                        <h2 class="fw-900 text-dark">Quantum stock surges after exceeding Q3 earnings...</h2>
+                        <p class="text-muted">Market analysts suggest the surge is due to increased adoption of cloud services and better-than-expected margins in the hardware sector.</p>
+                        <a href="/register" class="btn btn-sm btn-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            {% for stock in trending_stocks %}
+            <div class="col-md-6">
+                <div class="p-3 bg-white border-faded rounded mb-g d-flex align-items-center">
+                    <div class="flex-1">
+                        <div class="text-muted small">{{ stock.name }}</div>
+                        <div class="fw-700 text-dark">{{ stock.price | usd }}</div>
+                    </div>
+                    <span class="text-{{ 'success' if stock.change >= 0 else 'danger' }} fw-500">
+                        {{ stock.change }}%
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-  </div>
+
+    <div class="col-xl-4">
+        <div id="panel-market" class="panel">
+            <div class="panel-hdr bg-primary-50">
+                <h2>Indices <span class="fw-300">Watch</span></h2>
+            </div>
+            <div class="panel-container show">
+                <div class="panel-content p-0">
+                    <table class="table table-sm table-clean m-0">
+                        <thead>
+                            <tr class="bg-light">
+                                <th class="pl-3">Ticker</th>
+                                <th class="text-right pr-3">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pl-3"><span class="fw-700">AAPL</span> <small class="text-muted">Apple</small></td>
+                                <td class="text-right pr-3 fw-700 text-success">$223.12</td>
+                            </tr>
+                            <tr>
+                                <td class="pl-3"><span class="fw-700">TSLA</span> <small class="text-muted">Tesla</small></td>
+                                <td class="text-right pr-3 fw-700 text-danger">$245.88</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="p-3">
+                        <a href="/login" class="btn btn-block btn-outline-primary btn-sm">Sign in to View More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
