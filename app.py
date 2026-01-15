@@ -2,7 +2,7 @@ import os
 from flask import Flask, flash, redirect, render_template,session, request, url_for
 from helpers import *
 from create import *
-from model import dbconnect, User, Address, Transaction
+from model import dbconnect, User, Address, Transaction, Portfolio
 from flask_bootstrap import Bootstrap
 import forms
 from sqlalchemy.exc import IntegrityError

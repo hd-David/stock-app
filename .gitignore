@@ -1,3 +1,5 @@
 .venv/
 classes.*
 store.*
+__pycache__/
+*.pyc
